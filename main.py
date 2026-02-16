@@ -49,9 +49,7 @@ def handle_match_job():
 
         for idx, job in enumerate(all_jobs, 1):
             job_id = job["_id"]
-            meta = job.get("metadata", {})
-            location = meta.get("location", "N/A")
-            print(f"{idx}. {job_id}  |  Location: {location}")
+            print(f"{idx}. {job_id}")
 
         print("=" * 40)
 
@@ -72,7 +70,7 @@ def handle_match_job():
         top_k = input("How many top results? (default 5): ").strip()
         top_k = int(top_k) if top_k.isdigit() else 5
 
-        match_job(selected_job_id, top_k=top_k)
+        match_job(selected_job_id, top_k=top_k) 
 
     except Exception as e:
         print("❌ Error matching job:", e)

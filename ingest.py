@@ -3,9 +3,8 @@ import re
 from mongo_client import client
 from embedder import embed
 from skill_extractor import parse_skills
-from text_utils import extract_text  # This handles PDF, DOCX, TXT
+from text_utils import extract_text  
 
-# Collections
 resume_col = client.get_or_create_collection("resumes")
 job_col = client.get_or_create_collection("jobs")
 
@@ -19,17 +18,14 @@ def _extract_job_metadata(text: str) -> dict:
         "max_exp": 0
     }
     
-    # Extract Location
     location_match = re.search(r"Location:\s*([^\n]+)", text, re.IGNORECASE)
     if location_match:
         metadata["location"] = location_match.group(1).strip()
-    
-    # Extract Employment Type
+
     type_match = re.search(r"Employment Type:\s*([^\n]+)", text, re.IGNORECASE)
     if type_match:
         metadata["job_type"] = type_match.group(1).strip()
     
-    # Extract Experience (e.g., "3–7 years" or "3-7 years")
     exp_match = re.search(r"Experience Required:\s*(\d+)[–\-](\d+)", text, re.IGNORECASE)
     if exp_match:
         metadata["min_exp"] = int(exp_match.group(1))
@@ -46,13 +42,13 @@ def ingest_resumes(path="data/resumes"):
     added = 0
 
     for file in files:
-        if not file.lower().endswith(".pdf"):
+        if not file.lower().endswith((".txt", ".pdf", ".docx")):
             continue
 
         text = extract_text(os.path.join(path, file))
 
         if not text or len(text.strip()) < 50:
-            print(f"⚠️ Skipping {file}: no readable text (likely scanned PDF)")
+            print(f" Skipping {file}: no readable text (likely scanned PDF)")
             continue
 
         primary_skills, secondary_skills = parse_skills(text)
@@ -70,7 +66,7 @@ def ingest_resumes(path="data/resumes"):
 
         added += 1
 
-    print(f"✅ Resumes added: {added}")
+    print(f"Resumes added: {added}")
 
 
 def ingest_jobs(path="data/jobs"):
@@ -81,7 +77,6 @@ def ingest_jobs(path="data/jobs"):
     added = 0
 
     for file in files:
-        # ✅ Support PDF, DOCX, TXT
         if not file.lower().endswith((".txt", ".pdf", ".docx")):
             continue
 
@@ -89,7 +84,7 @@ def ingest_jobs(path="data/jobs"):
         text = extract_text(file_path)
 
         if not text or len(text.strip()) < 50:
-            print(f"⚠️ Skipping {file}: no readable text")
+            print(f" Skipping {file}: no readable text")
             continue
 
         primary_skills, secondary_skills = parse_skills(text)
@@ -112,7 +107,7 @@ def ingest_jobs(path="data/jobs"):
 
         added += 1
 
-    print(f"✅ Jobs added: {added}")
+    print(f"Jobs added: {added}")
 
 
 if __name__ == "__main__":
